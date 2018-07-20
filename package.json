@@ -1,5 +1,5 @@
 {
-  "name": "tombcare",
+  "name": "wemine.market",
   "version": "1.0.0",
   "description": "",
   "main": "truffle-config.js",
@@ -13,6 +13,10 @@
   "license": "ISC",
   "dependencies": {
     "openzeppelin-solidity": "^1.9.0",
-    "truffle-hdwallet-provider": "0.0.5"
+    "truffle-hdwallet-provider": "0.0.5",
+    "web3": "^1.0.0-beta.34"
+  },
+  "devDependencies": {
+    "chai": "*"
   }
 }

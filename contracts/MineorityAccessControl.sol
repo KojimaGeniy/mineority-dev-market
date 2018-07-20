@@ -1,10 +1,9 @@
-pragma solidity ^0.4.23;
+pragma solidity ^0.4.24;
 
 contract MineorityAccessControl {
 
     //**Access controls levels**//
     address public ceoAddress;
-    address public cfoAddress;
     address public ctoAddress;
 
     // @dev Keeps track whether the contract is paused. When that is true, most actions are blocked
@@ -15,12 +14,6 @@ contract MineorityAccessControl {
     /// @dev Access modifier for CEO-only functionality
     modifier onlyCEO() {
         require(msg.sender == ceoAddress);
-        _;
-    }
-
-    /// @dev Access modifier for CFO-only functionality
-    modifier onlyCFO() {
-        require(msg.sender == cfoAddress);
         _;
     }
 
@@ -50,13 +43,6 @@ contract MineorityAccessControl {
         ceoAddress = _newCEO;
     }
 
-    /// @dev Assigns a new address to act as the CFO. Only available to the current CEO.
-    /// @param _newCFO The address of the new CFO
-    function setCFO(address _newCFO) public onlyCEO {
-        require(_newCFO != address(0));
-
-        cfoAddress = _newCFO;
-    }
 
     /// @dev Assigns a new address to act as the CTO. Only available to the current CEO.
     /// @param _newCTO The address of the new CTO
