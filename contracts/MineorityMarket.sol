@@ -7,17 +7,29 @@ import "./utils/strings.sol";
 contract MineorityMarket is MineorityOwnership,usingOraclize {
     using strings for *;
 
+    struct Invoice {
+        uint256 totalPrice;
+        // vendors and whatever ???
+        // uint256 expirationTime; ???
+        // data about purchase ???
+    }
+
+
     string[] public form;
 
     mapping(bytes32 => bool) validIds;
     mapping(bytes32 => string) queryIdToHash;
     mapping(string => string) hashToData;
+    // Or identified by IPFS hash or by queryId or we may add ID's 
+    // and map them with users
+    // Btw only one invoice allowed per user
+    mapping(address => Invoice) userAddressToInvoice;
 
-    event ItReturned();
+    event ItReturned(string _hash);
 
     constructor() {
         // Just for local testing
-        OAR = OraclizeAddrResolverI(0x6f485C8BF6fc43eA212E93BBF8ce046C7f1cb475);
+        OAR = OraclizeAddrResolverI(0x0a143BDF026Eabaf95d3E88AbB88169674Db92f5);
     }
 
     function __callback(bytes32 myid, string result) {
@@ -25,57 +37,63 @@ contract MineorityMarket is MineorityOwnership,usingOraclize {
         require(msg.sender == oraclize_cbAddress());
         hashToData[queryIdToHash[myid]] = result;
         delete validIds[myid];
-        emit ItReturned();
+        emit ItReturned(queryIdToHash[myid]);
+
+        createInvoiceFromData(result);
     }
 
     function queryIPFS(string _hash) public payable {
-        bytes32 queryId = oraclize_query("IPFS", _hash);
+        Invoice memory _invoice = userAddressToInvoice[msg.sender]; 
+        require(_invoice.totalPrice == 0);
+        bytes32 queryId = oraclize_query("IPFS", _hash, 800000);
         queryIdToHash[queryId] = _hash;
         validIds[queryId] = true;
     }
 
-    function res(string _hash) public view returns(string) {
-        return hashToData[_hash];
-    }
 
-    function get(uint i) public view returns(string) {
-        return form[i];
-    }
 
-    function parse(string _hash) public {
-        var s = hashToData[_hash].toSlice();
+    function createInvoiceFromData(string _data) public payable {
+        var s = _data.toSlice();
         var delim = ".".toSlice();
         form = new string[](s.count(delim) + 1);
         for(uint i = 0; i < form.length; i++) {
             form[i] = s.split(delim).toString();
         }
+
+        // Take invoice
+        Invoice memory _invoice = Invoice({
+            totalPrice: parseInt(form[0])
+            // expirationTime ???
+        });
+
+        userAddressToInvoice[parseAddr(form[2])] = _invoice;
+        
     }
 
-    // Basically we'll have a mapping hash => data from ipfs,
-    // comparing data with something else
-
-    function executeOrder(address[] vendors, uint256[] prices) public payable {
-        // Query IPFS
-        require(msg.value >= parseInt(form[0]));
-        bytes32 checkHash = keccak256("570000000000000000.ffe1b32a483abd02e966296fbc1904ff50f4beb323d6ec23cb6ecd2360ae90a4.3b086c9231fe2ffff98ae089d7b60efacedc3686a537272bf56ebbf0217a2f95");
-        // Padazhdat eba
-
-        // ...
-
-        // Parse into 3 parts
-
-        // Verify everything, calculate and send everything to everyone
+    function getInvoice(address _customer) view public returns(uint256) {
+        Invoice memory _invoice = userAddressToInvoice[_customer]; 
+        return (_invoice.totalPrice);
     }
 
-    function check() public returns(bytes32) {
-        return keccak256(strConcat("0xf17f52151ebef6c7334fad080c5704d77216b732","570000000000000000"));
+    function removeInvoice(address _customer) public {
+        delete userAddressToInvoice[_customer];
+    }
+
+    function executeOrder(address _customer,address vendors, uint256 prices) public payable {
+        // Fuck who's gonna check if he pays for what he ordered
+        // will be corrected in the next release
+        // i promise
+        Invoice memory _invoice = userAddressToInvoice[_customer]; 
+        require(_invoice.totalPrice != 0);  // check if exists
+        require(msg.value >= _invoice.totalPrice);
+
+        _mint(_customer,"Huy ego znaet chto zdes");
+
+        // ti mojet poprobuesh prodavsu chego otpravit? 
     }
 
 
-
-    function _mint(string _dataHash) internal {
-        // after payment confirmed
-
+    function _mint(address _owner,string _dataHash) internal {
         Token memory _token = Token({
             dataHash: _dataHash
         });
@@ -85,10 +103,25 @@ contract MineorityMarket is MineorityOwnership,usingOraclize {
         require(_tokenId <= 4294967295);
         allTokens.push(_token); 
 
-        addTokenTo(msg.sender,_tokenId);
+        addTokenTo(_owner,_tokenId);
     }
 
 
+
+
+    // Dalshe huynya ne listay
+
+    function res(string _hash) public view returns(string) {
+        return hashToData[_hash];
+    }
+
+    function get(uint i) public view returns(uint256) {
+        return parseInt(form[i]);
+    }
+
+    function check() public returns(bytes32) {
+        return keccak256(strConcat("0xf17f52151ebef6c7334fad080c5704d77216b732","570000000000000000"));
+    }
 
 
     function() public payable {}
