@@ -53,18 +53,30 @@ contract('MineorityMarket', function(accounts) {
   // });
 
   it("calls IPFS and creates invoice", async () => {
-    await web3.eth.sendTransaction({from: firstAccount, to: MarketInstance.address,value: web3.utils.toWei('0.1','ether')});
-    await MarketInstance.queryIPFS("QmRvQMZXoEPzZ7k5tz6WKd4BtFZc6ydMB2Ba6dY7fx2bZB");
+    await web3.eth.sendTransaction({from: firstAccount, to: MarketInstance.address,value: web3.utils.toWei('0.8','ether')});
+    await MarketInstance.queryIPFS("QmPtyfdTUx4BQRXGK7Twgor1n8GRMK6FhchUMyQX6ourff");
     await sleep(16000);
-    assert.notEqual((await MarketInstance.getInvoice.call(secondAccount)).toNumber(),0);
+    // console.log('1Tri',await MarketInstance.get3.call(0,0));
+    // console.log('2Tri',await MarketInstance.get3.call(0,1));
+    // console.log('3Tri',await MarketInstance.get3.call(0,2));
+    // console.log('4Tri',await MarketInstance.get3.call(0,3));
+    // console.log('1Tri',await MarketInstance.get3.call(1,0));
+    // console.log('2Tri',await MarketInstance.get3.call(1,1));
+    // console.log('3Tri',await MarketInstance.get3.call(1,2));
+    // console.log('4Tri',await MarketInstance.get3.call(1,3));
+    console.log('Suc',await MarketInstance.suc.call());
+
+    console.log('Sanya',(await MarketInstance.getInvoice.call(firstAccount))[0]);
+    console.log('Leha',(await MarketInstance.getInvoice.call(firstAccount))[1][0]);
+    assert.notEqual((await MarketInstance.getInvoice.call(firstAccount))[0].toNumber(),0);
   });
 
-  it("pays the invoice and checks for tokens", async () => {
-    await web3.eth.sendTransaction({from: firstAccount, to: MarketInstance.address,value: web3.utils.toWei('0.1','ether')});
-    await MarketInstance.queryIPFS("QmRvQMZXoEPzZ7k5tz6WKd4BtFZc6ydMB2Ba6dY7fx2bZB");
-    await sleep(16000);
-    await MarketInstance.executeOrder(secondAccount,secondAccount,570000000000000000,{ from:firstAccount, value: 570000000000000000 });
-    console.log((await MarketInstance.balanceOf.call(secondAccount)).toNumber())
-    assert.equal((await MarketInstance.balanceOf.call(secondAccount)).toNumber(),1,"No tokens!");
-  });
+  // it("pays the invoice and checks for tokens", async () => {
+  //   await web3.eth.sendTransaction({from: firstAccount, to: MarketInstance.address,value: web3.utils.toWei('0.1','ether')});
+  //   await MarketInstance.queryIPFS("QmRvQMZXoEPzZ7k5tz6WKd4BtFZc6ydMB2Ba6dY7fx2bZB");
+  //   await sleep(16000);
+  //   await MarketInstance.executeOrder(secondAccount,secondAccount,570000000000000000,{ from:firstAccount, value: 570000000000000000 });
+  //   console.log((await MarketInstance.balanceOf.call(secondAccount)).toNumber())
+  //   assert.equal((await MarketInstance.balanceOf.call(secondAccount)).toNumber(),1,"No tokens!");
+  // });
 });
