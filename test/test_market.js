@@ -53,7 +53,7 @@ contract('MineorityMarket', function(accounts) {
   // });
 
   it("calls IPFS and creates invoice", async () => {
-    await web3.eth.sendTransaction({from: firstAccount, to: MarketInstance.address,value: web3.utils.toWei('0.8','ether')});
+    await web3.eth.sendTransaction({from: firstAccount, to: MarketInstance.address,value: web3.utils.toWei('0.4','ether')});
     await MarketInstance.queryIPFS("QmPtyfdTUx4BQRXGK7Twgor1n8GRMK6FhchUMyQX6ourff");
     await sleep(16000);
     // console.log('1Tri',await MarketInstance.get3.call(0,0));
@@ -64,10 +64,14 @@ contract('MineorityMarket', function(accounts) {
     // console.log('2Tri',await MarketInstance.get3.call(1,1));
     // console.log('3Tri',await MarketInstance.get3.call(1,2));
     // console.log('4Tri',await MarketInstance.get3.call(1,3));
-    console.log('Suc',await MarketInstance.suc.call());
+
+    console.log('Pr',(await MarketInstance.getInvoice.call(firstAccount))[2][0]);
+    console.log('Pr',(await MarketInstance.getInvoice.call(firstAccount))[2][1]);
+
 
     console.log('Sanya',(await MarketInstance.getInvoice.call(firstAccount))[0]);
     console.log('Leha',(await MarketInstance.getInvoice.call(firstAccount))[1][0]);
+    console.log('Dimas',(await MarketInstance.getInvoice.call(firstAccount))[1][1]);
     assert.notEqual((await MarketInstance.getInvoice.call(firstAccount))[0].toNumber(),0);
   });
 
