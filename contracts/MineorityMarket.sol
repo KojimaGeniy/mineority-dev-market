@@ -12,7 +12,9 @@ contract MineorityMarket is MineorityOwnership,usingOraclize {
         address[] vendors;
         uint256[] prices;
         // uint256 expirationTime; ???
-        // data about purchase ???
+        // descriptions array ???
+        // IPFS hash
+        // same goes to tokens
     }
 
 
@@ -27,7 +29,7 @@ contract MineorityMarket is MineorityOwnership,usingOraclize {
     // Btw only one invoice allowed per user
     mapping(address => Invoice) userAddressToInvoice;
 
-    event ItReturned(string _hash);
+    event QueryReturned(string _hash);
 
     constructor() {
         // Just for local testing
@@ -39,7 +41,7 @@ contract MineorityMarket is MineorityOwnership,usingOraclize {
         require(msg.sender == oraclize_cbAddress());
         hashToData[queryIdToHash[myid]] = result;
         delete validIds[myid];
-        emit ItReturned(queryIdToHash[myid]);
+        emit QueryReturned(queryIdToHash[myid]);
 
         createInvoiceFromData(result);
     }
@@ -91,9 +93,9 @@ contract MineorityMarket is MineorityOwnership,usingOraclize {
 
     function createInv(uint _price,address _customer,string[][] _invoiceInfo) internal {
         address[] memory addr = new address[](_invoiceInfo.length);
-        uint256[] memory ui = new uint256[](2);
+        uint256[] memory ui = new uint256[](_invoiceInfo.length);
 
-        for(uint y = 0; y < 2; y++) {
+        for(uint y = 0; y < _invoiceInfo.length; y++) {
             // It shows second account on both orders, need deeper investigation
             addr[y] = parseAddr(_invoiceInfo[y][0]); 
             ui[y] = parseInt(_invoiceInfo[y][1]);
@@ -117,22 +119,29 @@ contract MineorityMarket is MineorityOwnership,usingOraclize {
         delete userAddressToInvoice[_customer];
     }
 
-    function executeOrder(address _customer/*,address vendors, uint256 prices*/) public payable {
-        // Fuck who's gonna check if he pays for what he ordered
-        // will be corrected in the next release
-        // i promise
+
+
+    function executeOrder(address _customer) public payable {
         Invoice memory _invoice = userAddressToInvoice[_customer]; 
         require(_invoice.totalPrice != 0);  // check if exists
         require(msg.value >= _invoice.totalPrice);
 
-        _mint(_customer,"Huy ego znaet chto zdes");
-        // IPFS hash + good ID
-        // ti mojet poprobuesh prodavsu chego otpravit? 
+        for(uint i = 0;i < _invoice.vendors.length; i++) {
+            _mint(
+                _customer,
+                _invoice.vendors[i],
+                _invoice.prices[i],
+                "IPFS hash here but how to obtain it");
+
+            _invoice.vendors[i].transfer(_invoice.prices[i]);
+        }
     }
 
 
-    function _mint(address _owner,string _dataHash) internal {
+    function _mint(address _owner,address _vendor,uint256 _price,string _dataHash) internal {
         Token memory _token = Token({
+            vendor: _vendor,
+            price: _price,
             dataHash: _dataHash
         });
 

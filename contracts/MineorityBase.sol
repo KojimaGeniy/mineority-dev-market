@@ -12,6 +12,8 @@ contract MineorityBase is MineorityAccessControl {
     //**ERC721 implementation + all data structures**//
 
     struct Token {
+        address vendor;
+        uint256 price;
         // The description of what lies behind the token in ipfs
         string dataHash;
     }

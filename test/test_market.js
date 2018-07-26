@@ -7,7 +7,6 @@ const FINNEY = 10**15;
 
 contract('MineorityMarket', function(accounts) {
   const [firstAccount, secondAccount] = accounts;
-  let funding;
   function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
@@ -52,35 +51,28 @@ contract('MineorityMarket', function(accounts) {
   //   assert.isTrue(await MarketInstance.suc.call());
   // });
 
+});
+
+contract('MineorityMarket create invoice and pay for it', function(accounts) {
+  const [firstAccount, secondAccount] = accounts;
+  function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+  
+  before(async () => {
+    MarketInstance = await MineorityMarket.new();
+  });
+
   it("calls IPFS and creates invoice", async () => {
     await web3.eth.sendTransaction({from: firstAccount, to: MarketInstance.address,value: web3.utils.toWei('0.4','ether')});
     await MarketInstance.queryIPFS("QmPtyfdTUx4BQRXGK7Twgor1n8GRMK6FhchUMyQX6ourff");
     await sleep(16000);
-    // console.log('1Tri',await MarketInstance.get3.call(0,0));
-    // console.log('2Tri',await MarketInstance.get3.call(0,1));
-    // console.log('3Tri',await MarketInstance.get3.call(0,2));
-    // console.log('4Tri',await MarketInstance.get3.call(0,3));
-    // console.log('1Tri',await MarketInstance.get3.call(1,0));
-    // console.log('2Tri',await MarketInstance.get3.call(1,1));
-    // console.log('3Tri',await MarketInstance.get3.call(1,2));
-    // console.log('4Tri',await MarketInstance.get3.call(1,3));
-
-    console.log('Pr',(await MarketInstance.getInvoice.call(firstAccount))[2][0]);
-    console.log('Pr',(await MarketInstance.getInvoice.call(firstAccount))[2][1]);
-
-
-    console.log('Sanya',(await MarketInstance.getInvoice.call(firstAccount))[0]);
-    console.log('Leha',(await MarketInstance.getInvoice.call(firstAccount))[1][0]);
-    console.log('Dimas',(await MarketInstance.getInvoice.call(firstAccount))[1][1]);
     assert.notEqual((await MarketInstance.getInvoice.call(firstAccount))[0].toNumber(),0);
   });
 
-  // it("pays the invoice and checks for tokens", async () => {
-  //   await web3.eth.sendTransaction({from: firstAccount, to: MarketInstance.address,value: web3.utils.toWei('0.1','ether')});
-  //   await MarketInstance.queryIPFS("QmRvQMZXoEPzZ7k5tz6WKd4BtFZc6ydMB2Ba6dY7fx2bZB");
-  //   await sleep(16000);
-  //   await MarketInstance.executeOrder(secondAccount,secondAccount,570000000000000000,{ from:firstAccount, value: 570000000000000000 });
-  //   console.log((await MarketInstance.balanceOf.call(secondAccount)).toNumber())
-  //   assert.equal((await MarketInstance.balanceOf.call(secondAccount)).toNumber(),1,"No tokens!");
-  // });
-});
+  it("pays the invoice and checks for tokens", async () => {
+    await MarketInstance.executeOrder(firstAccount,{ from:firstAccount, value: 570000000000000000 });
+    assert.equal((await MarketInstance.balanceOf.call(firstAccount)).toNumber(),2,"No tokens!");
+  });
+
+  });
